@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#12161c" />
+    <title>聊天记录编辑器 · 本地版</title>
+    <link rel="stylesheet" href="./chat-editor.css" />
+  </head>
+  <body>
+    <div id="chat-editor" class="theme-wechat">
+      <header class="topbar">
+        <div class="brand-lockup">
+          <div class="brand-mark">✦</div>
+          <div>
+            <div class="brand-title">聊天记录编辑器</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <span class="save-state" id="save-state">已保存到浏览器</span>
+          <button class="ghost-button" id="undo-button" type="button" title="撤销（⌘Z）">撤销</button>
+          <button class="ghost-button" id="redo-button" type="button" title="重做（⌘⇧Z）">重做</button>
+          <button class="ghost-button" id="connect-project-button" type="button">接入本地文件夹</button>
+          <button class="ghost-button" id="import-button" type="button">导入项目</button>
+          <button class="ghost-button" id="export-button" type="button">导出项目</button>
+          <button class="primary-button" id="export-png-button" type="button">导出 PNG</button>
+          <input id="import-file" type="file" accept=".json,.zip,application/json,application/zip" hidden />
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside class="sidebar panel">
+          <div class="panel-heading">
+            <div>
+              <h2>聊天场景</h2>
+            </div>
+            <div class="panel-heading-actions"><button class="icon-button accent-icon" id="add-chat" type="button" title="新建聊天">＋</button><button class="icon-button" id="duplicate-chat" type="button" title="复制聊天场景">⧉</button><button class="icon-button" id="delete-chat" type="button" title="删除聊天场景">⌫</button></div>
+          </div>
+          <div class="sidebar-tools">
+            <label class="search-box">
+              <span>⌕</span>
+              <input id="chat-search" type="search" placeholder="搜索聊天场景" />
+            </label>
+            <button class="soft-button global-character-button" id="open-global-characters" type="button">全局角色管理</button>
+          </div>
+          <div id="chat-list" class="chat-list"></div>
+          <div class="sidebar-footer">
+            <div class="local-note"><span class="status-dot"></span><span>本地保存</span></div>
+            <button class="text-button danger-text" id="reset-button" type="button">恢复示例数据</button>
+          </div>
+        </aside>
+
+        <div class="panel-resizer" data-resize="left" role="separator" aria-label="调整场景栏宽度" aria-orientation="vertical" tabindex="0"></div>
+        <section class="stage panel">
+          <div class="stage-header"><div class="scene-title-lockup"><h2 id="inspector-chat-title">午后小组</h2><button class="icon-button" id="rename-scene" type="button" aria-label="修改聊天名称">✎</button></div><div class="preview-tools">
+              <button class="soft-button" id="fit-preview" type="button">适应</button><label class="zoom-control"><input id="zoom-input" type="number" min="25" max="125" step="5" value="100" aria-label="缩放百分比" /><span>%</span></label>
+          </div></div>
+          <div class="preview-area">
+            <div class="preview-canvas">
+            <div id="preview-shell" class="preview-shell">
+              <div class="device-frame" aria-label="手机聊天预览">
+                <div class="mobile-statusbar" aria-hidden="true">
+                  <span class="status-connectivity"><svg viewBox="0 0 20 14"><path d="M1 13V10h3v3zm5 0V7h3v6zm5 0V4h3v9zm5 0V1h3v12z" fill="currentColor"/></svg><svg viewBox="0 0 20 16"><path d="M2 5a12 12 0 0 1 16 0M5 8a8 8 0 0 1 10 0M8 11a3 3 0 0 1 4 0"/><circle cx="10" cy="14" r="1" fill="currentColor" stroke="none"/></svg></span>
+                  <span id="preview-clock" class="preview-clock">9:41</span><span class="dynamic-island"></span>
+                  <span class="status-battery"><svg viewBox="0 0 29 14"><rect x="1" y="1" width="24" height="12" rx="2.6" opacity=".5"/><rect id="battery-fill" x="3" y="3" width="20" height="8" rx="1" fill="currentColor" stroke="none"/><path d="M27 4v6" opacity=".6"/></svg></span>
+                </div>
+                <div id="chat-window" class="chat-window">
+                  <div class="chat-topbar">
+                    <div class="imessage-contact" aria-hidden="true"><span id="imessage-contact-avatar"></span><span class="imessage-contact-name"><b id="imessage-contact-title"></b><span>›</span></span></div>
+                    <span class="chat-back" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m15 3-9 9 9 9"/></svg></span>
+                    <div class="chat-heading">
+                      <div class="chat-title-row"><strong id="preview-chat-title">午后小组</strong><span id="preview-chat-count" class="member-count">(3)</span></div>
+                      <span id="preview-chat-subtitle" class="qq-chat-status">在线</span>
+                    </div>
+                    <span class="wechat-header-actions" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></svg></span>
+                    <span class="qq-header-actions" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></span>
+                  </div>
+                  <div id="messages" class="messages" aria-live="polite"></div>
+                  <form class="wechat-composer" data-composer>
+                    <span class="native-icon"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11.5"/><path d="M10 12q3 2 0 4m3-7q5 5 0 10m3-13q7 8 0 16"/></svg></span>
+                    <input class="native-input" data-composer-input aria-label="微信消息输入" autocomplete="off" />
+                    <span class="native-icon"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11.5"/><circle class="solid" cx="10" cy="10" r="1.6"/><circle class="solid" cx="18" cy="10" r="1.6"/><path d="M7.5 15h13a6.5 6.5 0 0 1-13 0Z"/></svg></span>
+                    <span class="native-icon composer-plus"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11.5"/><path d="M14 7.5v13M7.5 14h13"/></svg></span><button class="native-send" type="submit" hidden>发送</button>
+                  </form>
+                  <form class="qq-composer" data-composer>
+                    <div class="qq-input-row"><input class="qq-input" data-composer-input aria-label="QQ消息输入" autocomplete="off" /><button class="native-send" type="submit" hidden>发送</button></div>
+                    <div class="qq-input-tools">
+                      <span class="native-icon"><svg viewBox="0 0 28 28"><rect x="10" y="3" width="8" height="15" rx="4"/><path d="M6 13v2a8 8 0 0 0 16 0v-2M14 23v4"/></svg></span>
+                      <span class="native-icon"><svg viewBox="0 0 28 28"><rect x="3" y="4" width="22" height="20" rx="4"/><circle cx="10" cy="10" r="2.1"/><path d="m4 21 7-7 4 4 5-5 5 6"/></svg></span>
+                      <span class="native-icon"><svg viewBox="0 0 28 28"><path d="M10 4h8l2 3h3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h3Z"/><circle cx="14" cy="16" r="5"/></svg></span>
+                      <span class="native-icon"><svg viewBox="0 0 28 28"><rect x="4" y="3" width="20" height="23" rx="3"/><path d="m4 10 10 5 10-5"/><circle cx="14" cy="15" r="2.3" fill="var(--chrome-bg)"/></svg></span>
+                      <span class="native-icon"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11.5"/><path d="M9 9v4m10-4v4M8 18q6 6 12 0"/></svg></span>
+                      <span class="native-icon"><svg viewBox="0 0 28 28"><circle cx="14" cy="14" r="11.5"/><path d="M14 7v14M7 14h14"/></svg></span>
+                    </div>
+                  </form>
+                  <form class="imessage-composer" data-composer><span class="imessage-add" aria-hidden="true">＋</span><div class="imessage-input-wrap"><input data-composer-input class="imessage-input" aria-label="iMessage 消息输入" placeholder="iMessage" autocomplete="off" /><span class="imessage-audio" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 10v4m4-7v10m4-14v18m4-16v14m4-11v8m4-6v4"/></svg></span><button class="native-send" type="submit" hidden aria-label="发送">↑</button></div></form>
+                </div>
+                <div class="mobile-safe-area" aria-hidden="true"><span></span></div>
+              </div>
+            </div>
+            </div>
+          </div>
+
+        </section>
+
+        <div class="panel-resizer" data-resize="right" role="separator" aria-label="调整编辑栏宽度" aria-orientation="vertical" tabindex="0"></div>
+        <aside class="inspector panel">
+          <div class="inspector-tabs"><button class="inspector-tab" data-inspector-tab="settings" type="button">页面设置</button><button class="inspector-tab active" data-inspector-tab="message" type="button">消息详情</button></div>
+          <div id="message-list-tools" class="message-list-tools"><button class="outline-button" id="open-message-list" type="button">所有消息</button><button class="soft-button" id="add-text-message" type="button">＋ 新消息</button></div>
+          <div id="inspector-content" class="inspector-content"></div>
+          <div id="settings-footer" class="settings-footer" hidden><button class="outline-button" id="open-character-list" type="button">角色管理</button></div>
+        </aside>
+      </main>
+      <div id="character-modal" class="character-modal" hidden>
+        <div class="character-modal-backdrop" data-character-modal-close></div>
+        <section class="character-modal-card" role="dialog" aria-modal="true" aria-labelledby="character-modal-title">
+          <div class="character-modal-head"><div><h2 id="character-modal-title">角色详情</h2></div><button class="icon-button" data-character-modal-close type="button" aria-label="关闭">×</button></div>
+          <div id="character-modal-content"></div>
+        </section>
+      </div>
+      <div id="global-character-modal" class="character-modal" hidden>
+        <div class="character-modal-backdrop" data-global-character-close></div>
+        <section class="character-modal-card global-character-card" role="dialog" aria-modal="true" aria-labelledby="global-character-title">
+          <div class="character-modal-head"><h2 id="global-character-title">全局角色管理</h2><button class="icon-button" data-global-character-close type="button" aria-label="关闭">×</button></div>
+          <div id="global-character-list"></div>
+          <button class="primary-button global-character-add" id="global-add-character" type="button">＋ 新角色</button>
+        </section>
+      </div>
+      <div id="scene-settings-modal" class="character-modal" hidden>
+        <div class="character-modal-backdrop" data-scene-settings-close></div>
+        <section class="character-modal-card scene-settings-card" role="dialog" aria-modal="true">
+          <div class="character-modal-head"><h2>角色管理</h2><button class="icon-button" data-scene-settings-close type="button" aria-label="关闭">×</button></div>
+          
+          <div id="scene-settings-content"></div>
+        </section>
+      </div>
+      <div id="message-list-modal" class="character-modal" hidden><div class="character-modal-backdrop" data-message-list-close></div><section class="character-modal-card message-list-card" role="dialog" aria-modal="true" aria-labelledby="message-list-title"><div class="character-modal-head"><h2 id="message-list-title">所有消息</h2><button class="icon-button" data-message-list-close type="button" aria-label="关闭">×</button></div><div class="message-list-actions"><button class="outline-button" id="message-list-select-mode" type="button">选择</button><label><input id="select-all-messages" type="checkbox" hidden /> 全选</label><button class="outline-button danger" id="delete-selected-messages" type="button">删除已选</button></div><div id="all-messages-list"></div></section></div>
+      <div id="private-chat-modal" class="character-modal" hidden>
+        <div class="character-modal-backdrop"></div>
+        <section class="character-modal-card" role="dialog" aria-modal="true"><div class="character-modal-head"><h2>选择私聊角色</h2></div><p class="modal-copy">取消勾选要移出的角色，保留 1–2 位。</p><div id="private-chat-content"></div><div class="button-row"><button class="outline-button" data-private-cancel type="button">取消</button><button class="primary-button" data-private-confirm type="button">确定</button></div></section>
+      </div>
+      <div id="editor-modal" class="character-modal editor-modal" hidden>
+        <div class="character-modal-backdrop" data-editor-modal-close></div>
+        <section class="character-modal-card editor-modal-card" role="dialog" aria-modal="true" aria-labelledby="editor-modal-title">
+          <div class="character-modal-head"><h2 id="editor-modal-title">提示</h2><button class="icon-button" data-editor-modal-close type="button" aria-label="关闭">×</button></div>
+          <div id="editor-modal-content"></div>
+          <div id="editor-modal-actions" class="button-row"></div>
+        </section>
+      </div>
+      <div id="png-preview-modal" class="character-modal png-preview-modal" hidden>
+        <div class="character-modal-backdrop" data-png-preview-close></div>
+        <section class="character-modal-card png-preview-card" role="dialog" aria-modal="true" aria-labelledby="png-preview-title">
+          <div class="character-modal-head"><h2 id="png-preview-title">PNG 预览</h2><button class="icon-button" data-png-preview-close type="button" aria-label="关闭">×</button></div>
+          <div class="png-preview-frame"><img id="png-preview-image" alt="PNG 预览" /></div>
+          <div class="button-row"><button class="outline-button" data-png-preview-close type="button">返回编辑</button><button class="primary-button" id="download-png-confirm" type="button">保存 PNG</button></div>
+        </section>
+      </div>
+      <div id="export-modal" class="character-modal export-modal" hidden>
+        <div class="character-modal-backdrop" data-export-modal-close></div>
+        <section class="character-modal-card export-card" role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
+          <div class="character-modal-head"><h2 id="export-modal-title">导出图片</h2><button class="icon-button" data-export-modal-close type="button" aria-label="关闭">×</button></div>
+          <div class="export-mode-row">
+            <button class="export-mode active" data-export-kind="single" type="button">单页 PNG</button>
+            <button class="export-mode" data-export-kind="pages" type="button">连续截图</button>
+            <button class="export-mode" data-export-kind="long" type="button">完整长图</button>
+          </div>
+          <div id="export-status" class="export-status"></div>
+          <div id="export-pages" class="export-pages" hidden></div>
+          <div class="export-actions"><button class="outline-button" data-export-modal-close type="button">返回编辑</button><button class="outline-button" id="export-reset-offsets" type="button" hidden>恢复自动分页</button><button class="primary-button" id="export-run" type="button">生成预览</button><button class="primary-button" id="export-download-single" type="button" hidden>保存 PNG</button><button class="primary-button" id="export-download-zip" type="button" hidden>保存 ZIP</button><button class="primary-button" id="export-download-long" type="button" hidden>保存长图</button></div>
+        </section>
+      </div>
+      <div id="export-detail-modal" class="character-modal export-detail-modal" hidden>
+        <div class="character-modal-backdrop" data-export-detail-close></div>
+        <section class="character-modal-card export-detail-card" role="dialog" aria-modal="true" aria-labelledby="export-detail-title">
+          <div class="character-modal-head"><h2 id="export-detail-title">截图预览</h2><div class="export-detail-navigation"><button class="icon-button" id="export-detail-prev" type="button" aria-label="上一张">‹</button><button class="icon-button" id="export-detail-next" type="button" aria-label="下一张">›</button><button class="icon-button" data-export-detail-close type="button" aria-label="关闭">×</button></div></div>
+          <div id="export-detail-viewport" class="export-detail-viewport"><div id="export-live-preview" class="export-live-preview"></div></div>
+          <div class="export-detail-actions"><button class="outline-button" data-export-detail-close type="button">返回缩略图</button><button class="primary-button" id="export-apply-position" type="button">应用当前位置</button></div>
+        </section>
+      </div>
+    </div>
+    <script src="./vendor/html2canvas/html2canvas.min.js"></script>
+    <script src="./vendor/jszip/jszip.min.js"></script>
+    <script src="./chat-editor.js"></script>
+  </body>
+</html>
