@@ -7,6 +7,48 @@ const $ = (selector, scope = document) => scope.querySelector(selector);
 const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 const uid = (prefix) => `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 
+function enhanceSelects(scope = document) {
+  $$('select:not([data-custom-select])', scope).forEach((select) => {
+    select.dataset.customSelect = 'true';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-select';
+    const trigger = document.createElement('button');
+    trigger.type = 'button';
+    trigger.className = 'custom-select-trigger';
+    trigger.setAttribute('aria-haspopup', 'listbox');
+    const menu = document.createElement('div');
+    menu.className = 'custom-select-menu';
+    menu.setAttribute('role', 'listbox');
+    const sync = () => {
+      const selected = select.options[select.selectedIndex];
+      trigger.textContent = selected?.textContent || '';
+      menu.querySelectorAll('[data-custom-option]').forEach((option) => option.classList.toggle('active', option.dataset.value === select.value));
+    };
+    [...select.options].forEach((option) => {
+      const item = document.createElement('button');
+      item.type = 'button'; item.dataset.customOption = 'true'; item.dataset.value = option.value;
+      item.textContent = option.textContent || ''; item.disabled = option.disabled;
+      item.addEventListener('click', (event) => {
+        event.stopPropagation();
+        if (item.disabled) return;
+        select.value = item.dataset.value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        wrapper.classList.remove('open');
+      });
+      menu.append(item);
+    });
+    trigger.addEventListener('click', (event) => {
+      event.stopPropagation();
+      $$('.custom-select.open').forEach((other) => { if (other !== wrapper) other.classList.remove('open'); });
+      wrapper.classList.toggle('open');
+    });
+    select.classList.add('custom-select-native');
+    select.parentNode.insertBefore(wrapper, select);
+    wrapper.append(select, trigger, menu);
+    sync();
+  });
+}
+
 const defaultCharacters = [
   { id: 'char-me', name: '林澈', avatar: '🌙', side: 'right', bubble: '#b8efc9', text: '#1c2a20', pokeSuffix: '' },
   { id: 'char-aria', name: 'Aria', avatar: '🫧', side: 'left', bubble: '#ffffff', text: '#242b31', pokeSuffix: '' },
@@ -260,6 +302,7 @@ function render() {
   renderChatList();
   renderMessages();
   renderInspector();
+  enhanceSelects();
   syncComposer();
   updateHistoryButtons();
   if (!$('#scene-settings-modal').hidden) renderSceneSettings(settingsTab);
@@ -533,6 +576,7 @@ function renderInspector() {
   $('#message-list-tools').hidden = inspectorTab !== 'message';
   $('#settings-footer').hidden = inspectorTab !== 'settings';
   $('#inspector-content').innerHTML = inspectorTab === 'settings' ? renderChatInspector() : renderMessageInspector();
+  enhanceSelects($('#inspector-content'));
 }
 
 function renderAllMessages() {
@@ -562,6 +606,7 @@ function renderSceneSettings(tab = 'chat') {
   $$('.settings-modal-tabs .inspector-tab').forEach((button) => button.classList.toggle('active', button.dataset.settingsTab === tab));
   $('#scene-settings-content').innerHTML = renderCharactersInspector();
   $('#scene-settings-modal').hidden = false;
+  enhanceSelects($('#scene-settings-modal'));
 }
 
 function closeSceneSettings() {
@@ -704,6 +749,7 @@ function renderCharacterModal(id) {
     <div class="button-row"><button class="outline-button" data-character-modal-close type="button">完成</button><button class="outline-button danger" data-character-delete="${item.id}" type="button">删除角色</button></div>`;
   $('#character-modal').hidden = false;
   $('#character-modal').dataset.characterId = id;
+  enhanceSelects($('#character-modal'));
 }
 
 function closeCharacterModal() {
