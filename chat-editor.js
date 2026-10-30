@@ -1482,6 +1482,7 @@ async function importState(file) {
 }
 
 document.addEventListener('click', (event) => {
+  if (!event.target.closest('.custom-select')) $$('.custom-select.open').forEach((select) => select.classList.remove('open'));
   if (suppressNextMessageClick) {
     const guard = suppressNextMessageClick;
     suppressNextMessageClick = null;
