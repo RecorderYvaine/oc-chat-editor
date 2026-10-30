@@ -27,8 +27,11 @@ button { cursor: pointer; }
 
 .topbar { height: 74px; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; border-bottom: 1px solid var(--panel-border); background: rgba(15,18,23,.9); }
 .brand-lockup, .topbar-actions, .stage-toolbar, .stage-tools, .panel-heading, .chat-title-row, .sidebar-footer, .message-actions { display: flex; align-items: center; }
-.brand-lockup { gap: 12px; color: #eef2f6; text-decoration: none; }
-.brand-lockup:visited { color: #eef2f6; }
+.brand-lockup,
+.brand-lockup:visited,
+.brand-lockup:hover,
+.brand-lockup:active { gap: 12px; color: #eef2f6; text-decoration: none; }
+.brand-lockup .brand-title { color: #eef2f6; text-decoration: none; }
 .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 11px; color: #0c1711; background: var(--accent); font-size: 20px; box-shadow: 0 8px 24px var(--accent-soft); }
 .brand-title { font-weight: 800; letter-spacing: -.02em; }
 .brand-subtitle, .eyebrow { color: var(--muted); font-size: 10px; letter-spacing: .15em; font-weight: 700; }
