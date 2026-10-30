@@ -907,7 +907,6 @@ async function persistProjectFile() {
     const writable = await fileHandle.createWritable();
     await writable.write(JSON.stringify({ format: 'oc-form-creator-project', version: 1, state }, null, 2));
     await writable.close();
-    $('#save-state').textContent = '已保存到本地文件';
   }).catch(() => { $('#save-state').textContent = '文件保存失败，请检查授权'; });
   return projectSaveInFlight;
 }
@@ -925,8 +924,8 @@ async function restoreProjectFile(directory) {
     render();
     return true;
   } catch (error) {
-    if (error?.name !== 'NotFoundError') console.warn('无法读取本地项目文件', error);
-    return false;
+    if (error?.name === 'NotFoundError') return false;
+    throw error;
   }
 }
 
@@ -938,9 +937,11 @@ async function connectProjectFolder() {
     if (permission !== 'granted') return showEditorModal('没有获得文件授权', '未授权时会继续使用浏览器本地保存。');
     projectDirectoryHandle = directory;
     await storeProjectHandle(directory);
-    await persistProjectFile();
-    $('#save-state').textContent = '已保存到本地文件';
+    const loaded = await restoreProjectFile(directory);
+    if (!loaded) await persistProjectFile();
+    $('#save-state').textContent = loaded ? '已从本地文件加载' : '已保存到本地文件';
   } catch (error) {
+    projectDirectoryHandle = null;
     if (error?.name !== 'AbortError') showEditorModal('本地文件连接失败', '请重新选择一个可以写入的文件夹。');
   }
 }
